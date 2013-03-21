@@ -1,0 +1,54 @@
+create sequence eurtf_trans_id start with 100 increment by 1;
+
+CREATE OR REPLACE TRIGGER cascade_update_agent
+AFTER UPDATE OF proj_id ON eurtf_monitoring_projects
+FOR EACH ROW
+BEGIN
+UPDATE eurtf_agents
+SET proj_id = :new.proj_id
+WHERE proj_id = :old.proj_id;
+END;
+
+
+
+
+CREATE OR REPLACE TRIGGER cascade_update_trans1
+AFTER UPDATE OF proj_id ON eurtf_monitoring_projects
+FOR EACH ROW
+BEGIN
+UPDATE eurtf_transactions
+SET proj_id = :new.proj_id
+WHERE proj_id = :old.proj_id;
+END;
+
+
+
+
+CREATE OR REPLACE TRIGGER cascade_update_trans2
+AFTER UPDATE OF agent_id ON eurtf_agents
+FOR EACH ROW
+BEGIN
+UPDATE eurtf_transactions
+SET agent_id = :new.agent_id
+WHERE agent_id = :old.agent_id;
+END;
+
+
+create table eurtf_agents(agent_id varchar2(10) constraint agent_pk1 primary key,agent_name varchar2(30) 
+constraint agents_nt1_null1 not null,location varchar2(20) constraint agents_nt2_null2 not null,
+ip_addr varchar2(15) constraint agents_nt3_null3 not null,comments varchar2(50),
+proj_id varchar2(10) default null references eurtf_monitoring_projects(proj_id) on delete set null);
+
+
+
+create table eurtf_monitoring_projects(proj_id varchar2(10) constraint proj1_pk1 primary key,proj_name varchar2(30) 
+constraint proj1_nt1_null1 not null,start_date date constraint proj2_nt2_null2 not null,
+end_date date constraint proj3_nt3_null3 not null,status varchar2(20) default 'In progress',description varchar2(50))
+
+
+create table eurtf_transactions(transaction_id varchar2(10) constraint trans_pk1 primary key,
+transaction_name varchar2(20) constraint trans1_nt1_null1 not null,agent_id varchar2(10) 
+default null references eurtf_agents(agent_id) on delete set null,proj_id varchar2(10) default 
+null references eurtf_monitoring_projects(proj_id) on delete set null,page_load_time number constraint 
+trans2_nt2_null2 not null,time_to_first_byte number constraint trans3_nt3_null3 not null,time_to_start_render 
+number constraint trans4_nt4_null4 not null,trans_date date constraint trans5_nt5_null5 not null)
